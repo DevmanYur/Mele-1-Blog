@@ -3,7 +3,15 @@ from django.utils import timezone
 from django.contrib.auth.models import User
 
 
+class PublishedManager(models.Manager):
+    def get_queryset(self):
+        return super().get_queryset().filter(status=Post.Status.PUBLISHED)
+
+
+
 class Post(models.Model):
+    objects = models.Manager()  # менеджер, применяемый по умолчанию
+    published = PublishedManager()
 
 
     # Мы определили перечисляемый класс Status путем подклассирования
@@ -92,6 +100,8 @@ class Post(models.Model):
     status = models.CharField(max_length=2,
                               choices=Status.choices,
                               default=Status.DRAFT)
+
+
 
     # Внутрь модели был добавлен Meta-класс. Этот класс определяет метадан-
     # ные модели. Мы используем атрибут ordering, сообщающий Django, что он

@@ -126,3 +126,8 @@ post.delete()
 менеджера в существующий менеджер 
 - `Post.my_manager.all()` создавать новый менеджер, видоизменив изначальный набор запросов QuerySet, возвращаемый менедже- 
 ром. 
+
+```shell
+from app_blog.models import Post
+Post.published.filter(title__startswith="Let's")
+```
