@@ -1,5 +1,6 @@
-from django.shortcuts import render
+from django.shortcuts import render, get_object_or_404
 from .models import Post
+from django.http import Http404
 
 # Представление post_list
 # принимает объект request в качестве единственного параметра. Указанный
@@ -18,9 +19,36 @@ from .models import Post
 #
 # Она возвращает объект
 # HttpResponse с прорисованным текстом (обычно исходным кодом HTML).
+# Функция сокращенного доступа render() учитывает контекст запроса, по-
+# этому любая переменная, установленная процессорами контекста шаблона,
+# доступна данному шаблону. Процессоры контекста шаблона – это просто вы-
+# зываемые объекты (функции, методы и классы), которые назначают контекст
+# переменным
 def post_list(request):
     posts = Post.published.all()
     return render(request,'blog/post/list.html', {'posts': posts})
+
+
+# Указанное представление принимает аргумент id поста. Здесь мы пытаемся извлечь объект Post
+# с заданным id, вызвав метод get() стандартного менеджера objects. Мы
+# создаем исключение Http404, чтобы вернуть ошибку HTTP с кодом состояния,
+# равным 404, если возникает исключение DoesNotExist, то есть модель не
+# существует, поскольку результат не найден.
+# Наконец, мы используем функцию сокращенного доступа render(), чтобы
+# прорисовать извлеченный пост с использованием шаблона.
+def post_detail(request, id):
+    # Django предоставляет функцию сокращенного доступа для вызова метода
+    # get() в заданном модельном менеджере и вызова исключения Http404 вместо
+    # исключения DoesNotExist, когда объект не найден
+    post = get_object_or_404(Post,
+                             id=id,
+                             status=Post.Status.PUBLISHED)
+    # try:
+    #     post = Post.published.get(id=id)
+    # except Post.DoesNotExist:
+    #     raise Http404("No Post found.")
+    return render(request,'blog/post/detail.html',{'post': post})
+
 
 '''
 
