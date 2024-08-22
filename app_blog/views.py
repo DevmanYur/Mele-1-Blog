@@ -2,6 +2,8 @@ from django.shortcuts import render, get_object_or_404
 from .models import Post
 from django.http import Http404
 
+from django.core.paginator import Paginator
+
 # Представление post_list
 # принимает объект request в качестве единственного параметра. Указанный
 # параметр необходим для всех функций-представлений.
@@ -25,7 +27,23 @@ from django.http import Http404
 # зываемые объекты (функции, методы и классы), которые назначают контекст
 # переменным
 def post_list(request):
-    posts = Post.published.all()
+    # posts = Post.published.all()
+    post_list = Post.published.all()
+
+    # Постраничная разбивка с 3 постами на страницу
+    # 1. Мы создаем экземпляр класса Paginator с числом объектов, возвращаемых
+    # в расчете на страницу. Мы будем отображать по три поста на страницу.
+    # 2. Мы извлекаем HTTP GET-параметр page и сохраняем его в переменной
+    # page_number. Этот параметр содержит запрошенный номер страницы.
+    # Если параметра page нет в GET-параметрах запроса, то мы используем
+    # стандартное значение 1, чтобы загрузить первую страницу результатов.
+    # 3. Мы получаем объекты для желаемой страницы, вызывая метод page()
+    # класса Paginator. Этот метод возвращает объект Page, который хранится
+    # в переменной posts.
+    # 4. Мы передаем номер страницы и объект posts в шаблон.
+    paginator = Paginator(post_list, 3)
+    page_number = request.GET.get('page', 1)
+    posts = paginator.page(page_number)
     return render(request,
                   'blog/post/list.html',
                   {'posts': posts})
@@ -38,19 +56,38 @@ def post_list(request):
 # существует, поскольку результат не найден.
 # Наконец, мы используем функцию сокращенного доступа render(), чтобы
 # прорисовать извлеченный пост с использованием шаблона.
-def post_detail(request, id):
-    # Django предоставляет функцию сокращенного доступа для вызова метода
-    # get() в заданном модельном менеджере и вызова исключения Http404 вместо
-    # исключения DoesNotExist, когда объект не найден
-    post = get_object_or_404(Post,
-                             id=id,
-                             status=Post.Status.PUBLISHED)
+# def post_detail(request, id):
+
     # try:
     #     post = Post.published.get(id=id)
     # except Post.DoesNotExist:
     #     raise Http404("No Post found.")
-    return render(request,'blog/post/detail.html',{'post': post})
 
+    # Django предоставляет функцию сокращенного доступа для вызова метода
+    # get() в заданном модельном менеджере и вызова исключения Http404 вместо
+    # исключения DoesNotExist, когда объект не найден
+    # post = get_object_or_404(Post,
+    #                          id=id,
+    #                          status=Post.Status.PUBLISHED)
+    #
+    # return render(request,'blog/post/detail.html',{'post': post})
+
+# Мы видоизменили представление post_detail, чтобы использовать аргу-
+# менты year, month, day и post и извлекать опубликованный пост с заданным
+# слагом и датой публикации. Ранее, добавив в поле slug значение параметра
+# unique_for_date='publish' модели Post, мы обеспечили, чтобы был только один
+# пост со слагом на заданную дату. Таким образом, используя дату и слаг, мож-
+# но извлекать одиночные посты.
+def post_detail(request, year, month, day, post):
+    post = get_object_or_404(Post,
+                             status=Post.Status.PUBLISHED,
+                             slug=post,
+                             publish__year=year,
+                             publish__month=month,
+                             publish__day=day)
+    return render(request,
+                  'blog/post/detail.html',
+                  {'post': post})
 
 '''
 
