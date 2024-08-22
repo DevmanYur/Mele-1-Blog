@@ -1,8 +1,10 @@
 from django.shortcuts import render, get_object_or_404
 from .models import Post
 from django.http import Http404
+from django.views.generic import ListView
 
-from django.core.paginator import Paginator
+from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
+from .forms import EmailPostForm
 
 # Представление post_list
 # принимает объект request в качестве единственного параметра. Указанный
@@ -43,7 +45,24 @@ def post_list(request):
     # 4. Мы передаем номер страницы и объект posts в шаблон.
     paginator = Paginator(post_list, 3)
     page_number = request.GET.get('page', 1)
-    posts = paginator.page(page_number)
+    try:
+        posts = paginator.page(page_number)
+    except PageNotAnInteger:
+        # Если page_number не целое число, то
+        # выдать первую страницу
+        # Мы добавили новый блок except, чтобы при извлечении страницы управ-
+        # лять исключением PageNotAnInteger. Если запрошенная страница не является
+        # целым числом, то мы возвращаем первую страницу результатов.
+        posts = paginator.page(1)
+    except EmptyPage:
+        # Если page_number находится вне диапазона, то
+        # выдать последнюю страницу
+        # Мы добавили блок try и except, чтобы при извлечении страницы управлять
+        # исключением EmptyPage. Если запрошенная страница находится вне диапа-
+        # зона, то мы возвращаем последнюю страницу результатов. Мы получаем
+        # общее число страниц посредством paginator.num_pages. Общее число страниц
+        # совпадает с номером последней страницы.
+        posts = paginator.page(paginator.num_pages)
     return render(request,
                   'blog/post/list.html',
                   {'posts': posts})
@@ -88,6 +107,68 @@ def post_detail(request, year, month, day, post):
     return render(request,
                   'blog/post/detail.html',
                   {'post': post})
+
+
+class PostListView(ListView):
+    """
+    Альтернативное представление списка постов
+    •• атрибут queryset используется для того, чтобы иметь конкретно-при-
+    кладной набор запросов QuerySet, не извлекая все объекты. Вместо
+    определения атрибута queryset мы могли бы указать model=Post, и Django
+    сформировал бы для нас типовой набор запросов Post.objects.all();
+    •• контекстная переменная posts используется для результатов запроса.
+    Если не указано имя контекстного объекта context_object_name, то по
+    умолчанию используется переменная object_list;
+    •• в атрибуте paginate_by задается постраничная разбивка результатов
+    с возвратом трех объектов на страницу;
+    •• конкретно-прикладной шаблон используется для прорисовки страницы
+    шаблоном template_name. Если шаблон не задан, то по умолчанию List-
+    View будет использовать blog/post_list.html.
+    """
+
+    queryset = Post.published.all()
+    context_object_name = 'posts'
+    paginate_by = 3
+    template_name = 'blog/post/list.html'
+
+def post_share(request, post_id):
+    # Извлечь пост по идентификатору id
+    # Когда страница загружается в первый раз, представление получает запрос GET.
+    # В этом случае создается новый экземпляр класса EmailPostForm,
+    # который сохраняется в переменной form. Указанный экземпляр формы
+    # будет использоваться для отображения пустой формы в шаблоне:
+    # form = EmailPostForm()
+
+    post = get_object_or_404(Post,
+                             id=post_id,
+                             status=Post.Status.PUBLISHED)
+
+    # Когда пользователь заполняет форму и передает ее методом POST на
+    # обработку, создается экземпляр формы с использованием переданных
+    # данных, содержащихся в request.POST
+    if request.method == 'POST':
+
+        # Форма была передана на обработку
+        form = EmailPostForm(request.POST)
+
+        # После этого переданные данные валидируются методом is_valid() формы.
+        # ных и возвращает значение True, если все поля содержат валидные данные.
+        # Если какое-либо поле содержит невалидные данные, то is_valid()
+        # возвращает значение False. Список ошибок валидации можно получить
+        # посредством form.errors.
+        # Если форма невалидна, то форма снова прорисовывается в шаблоне,
+        # включая переданные данные. Ошибки валидации будут отображены в шаблоне.
+        if form.is_valid():
+            # Поля формы успешно прошли валидацию
+            # Если форма валидна, то валидированные данные извлекаются посред-
+            # ством form.cleaned_data. Указанный атрибут представляет собой словарь полей формы и их значений.
+            # Если данные формы не проходят валидацию, то cleaned_data будет содержать
+            # только валидные поля.
+            cd = form.cleaned_data
+            # ... отправить электронное письмо
+    else:
+        form = EmailPostForm()
+    return render(request, 'blog/post/share.html', {'post': post,'form': form})
 
 '''
 

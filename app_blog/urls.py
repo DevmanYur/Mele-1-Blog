@@ -19,8 +19,12 @@ urlpatterns = [
 
     # С помощью функции path() определяются два разных шаблона.
     # Первый шаблон URL-адреса не принимает никаких аргументов и соотносится с представлением post_list.
+    # path('',
+    #      views.post_list,
+    #      name='post_list'),
+    #
     path('',
-         views.post_list,
+         views.PostListView.as_view(),
          name='post_list'),
 
 
