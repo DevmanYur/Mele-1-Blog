@@ -26,7 +26,9 @@ from django.http import Http404
 # переменным
 def post_list(request):
     posts = Post.published.all()
-    return render(request,'blog/post/list.html', {'posts': posts})
+    return render(request,
+                  'blog/post/list.html',
+                  {'posts': posts})
 
 
 # Указанное представление принимает аргумент id поста. Здесь мы пытаемся извлечь объект Post
