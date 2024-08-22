@@ -20,6 +20,3 @@ urlpatterns = [
     path('blog/', include('app_blog.urls', namespace='blog')),
 ]
 
-'''
-
-'''
