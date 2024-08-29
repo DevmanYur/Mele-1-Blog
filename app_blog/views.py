@@ -5,6 +5,7 @@ from django.views.generic import ListView
 
 from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
 from .forms import EmailPostForm
+from django.core.mail import send_mail
 
 # Представление post_list
 # принимает объект request в качестве единственного параметра. Указанный
@@ -132,6 +133,7 @@ class PostListView(ListView):
     template_name = 'blog/post/list.html'
 
 def post_share(request, post_id):
+
     # Извлечь пост по идентификатору id
     # Когда страница загружается в первый раз, представление получает запрос GET.
     # В этом случае создается новый экземпляр класса EmailPostForm,
@@ -142,6 +144,11 @@ def post_share(request, post_id):
     post = get_object_or_404(Post,
                              id=post_id,
                              status=Post.Status.PUBLISHED)
+
+    # мы объявили переменную sent с изна-
+    # чальным значением False. Мы задаем этой переменной значение True после от-
+    # правки электронного письма.
+    sent = False
 
     # Когда пользователь заполняет форму и передает ее методом POST на
     # обработку, создается экземпляр формы с использованием переданных
@@ -166,9 +173,24 @@ def post_share(request, post_id):
             # только валидные поля.
             cd = form.cleaned_data
             # ... отправить электронное письмо
+           # Позже мы будем использовать переменную sent
+            # в шаблоне отображения сообщения об успехе при успешной передаче формы.
+            # Поскольку ссылка на пост должна вставляться в электронное письмо, мы
+            # получаем абсолютный путь к посту, используя его метод get_absolute_url().
+            # Мы используем этот путь на входе в метод request.build_absolute_uri(), чтобы
+            # сформировать полный URL-адрес, включая HTTP-схему и хост-имя (hostname)1.
+            # Мы создаем тему и текст сообщения электронного письма, используя очи-
+            # щенные данные валидированной формы. Наконец, мы отправляем электрон-
+            # ное письмо на адрес электронной почты, указанный в поле to (Кому) формы
+            post_url = request.build_absolute_uri(
+                post.get_absolute_url())
+            subject = f"{cd['name']} recommends you read " f"{post.title}"
+            message = f"Read {post.title} at {post_url}\n\n" f"{cd['name']}\'s comments: {cd['comments']}"
+            send_mail(subject, message, 'kolodinyv@gmail.com',[cd['to']])
+            sent = True
     else:
         form = EmailPostForm()
-    return render(request, 'blog/post/share.html', {'post': post,'form': form})
+    return render(request, 'blog/post/share.html', {'post': post,'form': form, 'sent': sent})
 
 '''
 

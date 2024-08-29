@@ -58,6 +58,14 @@ TEMPLATES = [
 WSGI_APPLICATION = 'project_mysite.wsgi.application'
 
 
+# Конфигурация сервера электронной почты стр108
+EMAIL_HOST = 'smtp.gmail.com'
+EMAIL_HOST_USER = 'kolodinyv@gmail.com'
+EMAIL_HOST_PASSWORD = 'nlqb iyye nhni anyf'
+EMAIL_PORT = 587
+EMAIL_USE_TLS = True
+
+
 # Database
 # https://docs.djangoproject.com/en/4.2/ref/settings/#databases
 
