@@ -1,5 +1,5 @@
 from django.contrib import admin
-from .models import Post
+from .models import Post, Comment
 
 # Декоратор
 # @admin.register() выполняет ту же функцию, что и функция admin.site.register()
@@ -40,6 +40,13 @@ class PostAdmin(admin.ModelAdmin):
     #  и PUBLISH (Опубликован). С помощью атрибута ordering были
     # заданы критерии сортировки, которые будут использоваться по умолчанию.
     ordering = ['status', 'publish']
+
+
+@admin.register(Comment)
+class CommentAdmin(admin.ModelAdmin):
+    list_display = ['name', 'email', 'post', 'created', 'active']
+    list_filter = ['active', 'created', 'updated']
+    search_fields = ['name', 'email', 'body']
 
 
 '''
