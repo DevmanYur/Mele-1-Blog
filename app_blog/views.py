@@ -1,10 +1,10 @@
 from django.shortcuts import render, get_object_or_404
-from .models import Post
+from .models import Post, Comment
 from django.http import Http404
 from django.views.generic import ListView
 
 from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
-from .forms import EmailPostForm
+from .forms import EmailPostForm, CommentForm
 from django.core.mail import send_mail
 
 # Представление post_list
@@ -192,6 +192,50 @@ def post_share(request, post_id):
         form = EmailPostForm()
     return render(request, 'blog/post/share.html', {'post': post,'form': form, 'sent': sent})
 
-'''
 
-'''
+from django.views.decorators.http import require_POST
+@require_POST
+def post_comment(request, post_id):
+
+    # По id поста извлекается опубликованный пост, используя функцию сокращенного доступа get_object_or_404().
+    post = get_object_or_404(Post,
+                             id=post_id,
+                             status=Post.Status.PUBLISHED)
+
+    # Определяется переменная comment с изначальным значением None. Указанная
+    # переменная будет использоваться для хранения комментарного объекта при его создании.
+    comment = None
+
+    # Комментарий был отправлен
+    # Создается экземпляр формы, используя переданные на обработку POST-
+    # данные, и проводится их валидация методом is_valid(). Если форма
+    # невалидна, то шаблон прорисовывается с ошибками валидации.
+    form = CommentForm(data=request.POST)
+    if form.is_valid():
+
+        # Создать объект класса Comment, не сохраняя его в базе данных
+        # Если форма валидна, то создается новый объект Comment, вызывая метод save()
+        # формы, и назначается переменной new_comment
+        # Метод save() создает экземпляр модели, к которой форма привязана,
+        # и сохраняет его в базе данных. Если вызывать его, используя commit=False,
+        # то экземпляр модели создается, но не сохраняется в базе данных. Такой
+        # подход позволяет видоизменять объект перед его окончательным сохранением.
+        # Метод save() доступен для ModelForm, но не для экземпляров класса
+        # Form, поскольку они не привязаны ни к одной модели.
+
+        comment = form.save(commit=False)
+        # Назначить пост комментарию
+
+        comment.post = post
+
+
+        # Сохранить комментарий в базе данных
+
+        comment.save()
+
+    # Прорисовывается шаблон blog/post/comment.html, передавая объекты
+    # post, form и comment в контекст шаблона
+    return render(request, 'blog/post/comment.html',
+                  {'post': post,
+                   'form': form,
+                   'comment': comment})
