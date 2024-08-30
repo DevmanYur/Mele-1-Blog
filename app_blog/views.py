@@ -106,9 +106,27 @@ def post_detail(request, year, month, day, post):
                              publish__year=year,
                              publish__month=month,
                              publish__day=day)
+
+    # Список активных комментариев к этому посту
+    '''
+    этот набор запросов сформирован с использованием объекта post. Вместо
+того чтобы формировать набор запросов для комментарной модели
+напрямую, мы используем объект post, чтобы извлекать связанные объ-
+екты Comment. Мы применяем менеджер comments для ранее определен-
+ных в модели Comment связанных с Comment объектов, используя атрибут
+related_name поля ForeignKey в модели Post
+    
+    '''
+    comments = post.comments.filter(active=True)
+    # Форма для комментирования пользователями
+    # мы также создали экземпляр формы для комментария
+    form = CommentForm()
+
     return render(request,
                   'blog/post/detail.html',
-                  {'post': post})
+                  {'post': post,
+                   'comments': comments,
+                   'form': form})
 
 
 class PostListView(ListView):
