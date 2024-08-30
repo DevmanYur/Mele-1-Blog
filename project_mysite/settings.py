@@ -17,6 +17,12 @@ ALLOWED_HOSTS = []
 
 # Application definition
 
+
+# django-taggit – это приспособленное для реиспользования приложение,
+# которое в первую очередь предлагает модель Tag и менеджер для удобного
+# добавления тегов в любую модель.
+
+
 INSTALLED_APPS = [
     'django.contrib.admin',
     'django.contrib.auth',
@@ -25,6 +31,7 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
     'app_blog.apps.AppBlogConfig',
+    'taggit',
 ]
 
 MIDDLEWARE = [

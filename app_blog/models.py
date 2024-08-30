@@ -1,6 +1,7 @@
 from django.db import models
 from django.utils import timezone
 from django.contrib.auth.models import User
+from taggit.managers import TaggableManager
 
 from django.urls import reverse
 
@@ -9,9 +10,23 @@ class PublishedManager(models.Manager):
     def get_queryset(self):
         return super().get_queryset().filter(status=Post.Status.PUBLISHED)
 
+'''
 
+'''
 
 class Post(models.Model):
+
+    # Модель Tag используется для хранения тегов. Она содержит поля name и slug.
+    # Модель TaggedItem используется для хранения схожих тегированных объек-
+    # тов. В ней есть поле ForeignKey для схожего объекта Tag. Она содержит внешний
+    # ключ (ForeignKey) к объекту ContentType и целочисленное поле (IntegerField)
+    # для хранения соответствующего id тегированного объекта. Поля content_type
+    # и object_id в сочетании образуют обобщенное отношение с любой моделью
+    # в проекте. Такой подход позволяет создавать взаимосвязи между экземпляром
+    # модели Tag и экземпляром любой другой модели своих собственных приложений.
+    tags = TaggableManager()
+
+
     objects = models.Manager()  # менеджер, применяемый по умолчанию
     published = PublishedManager()
 
