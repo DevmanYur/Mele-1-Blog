@@ -44,7 +44,15 @@ post_detail в именном пространстве blog. Мы передае
 чтобы конкатенировать элементы с заданной строкой.
 -->
     <p class="tags">
-        Tags: {{ post.tags.all|join:", " }}
+        Tags:
+              {% for tag in post.tags.all %}
+                <a href="{% url "blog:post_list_by_tag" tag.slug %}">
+                    {{ tag.name }}
+                </a>
+        {% if not forloop.last %}, {% endif %}
+        {% endfor %}
+
+
     </p>
 
 <p class="date">
