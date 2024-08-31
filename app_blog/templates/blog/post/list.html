@@ -32,6 +32,14 @@ post_detail в именном пространстве blog. Мы передае
             {{ post.title }}
         </a>
     </h2>
+<!--
+Шаблонный фильтр join работает так же, как метод Python string.join(),
+чтобы конкатенировать элементы с заданной строкой.
+-->
+    <p class="tags">
+        Tags: {{ post.tags.all|join:", " }}
+    </p>
+
 <p class="date">
     Published {{ post.publish }} by {{ post.author }}
 </p>
