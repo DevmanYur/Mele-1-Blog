@@ -11,6 +11,20 @@
     <a href="{% url "blog:post_share" post.id %}"> Share this post
     </a>
 </p>
+
+
+            <h1>Similar posts - Схожие посты</h1>
+            {% for post in similar_posts %}
+            <p>
+            <a href="{{ post.get_absolute_url }}">{{ post.title }}</a>
+            </p>
+            {% empty %}
+            There are no similar posts yet.
+            {% endfor %}
+
+
+
+
 <!--
 •• показывать общее число комментариев к посту;
 
@@ -61,18 +75,8 @@ comments. Шаблонные фильтры на входе принимают �
     {% endfor %}
 
 
-<!--
-
--->
 
     {% include "blog/post/includes/comment_form.html" %}
 
 {% endblock %}
 
-
-<!--
-
-
-•• показывать форму для добавления пользователями новых коммента-
-риев.
--->

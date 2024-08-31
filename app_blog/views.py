@@ -8,6 +8,17 @@ from .forms import EmailPostForm, CommentForm
 from django.core.mail import send_mail
 from taggit.models import Tag
 
+# функции агрегирования:
+# •• Avg: среднее значение;
+# •• Max: максимальное значение;
+# •• Min: минимальное значение;
+# •• Count: общее количество объектов.
+from django.db.models import Count
+
+
+
+
+
 # Представление post_list
 # принимает объект request в качестве единственного параметра. Указанный
 # параметр необходим для всех функций-представлений.
@@ -147,11 +158,38 @@ def post_detail(request, year, month, day, post):
     # мы также создали экземпляр формы для комментария посредством инструкции
     form = CommentForm()
 
+    # Список схожих постов
+
+    '''
+
+
+
+# 5) объект similar_posts передается в контекстный словарь для функции
+# render().
+    '''
+
+    # извлекается Python’овский список идентификаторов тегов текущего
+    # поста. Набор запросов QuerySet values_list() возвращает кортежи со
+    # значениями заданных полей. Ему передается параметр flat=True, чтобы
+    # получить одиночные значения, такие как [1, 2, 3, ...], а не одноэлементые кортежи, такие как [(1,), (2,), (3,) ...];
+    post_tags_ids = post.tags.values_list('id', flat=True)
+
+    # берутся все посты, содержащие любой из этих тегов, за исключением текущего поста;
+    similar_posts = Post.published.filter(tags__in=post_tags_ids).exclude(id=post.id)
+
+    # применяется функция агрегирования Count. Ее работа – генерировать
+    # вычисляемое поле – same_tags, – которое содержит число тегов, общих со всеми запрошенными тегами;
+    # результат упорядочивается по числу общих тегов (в убывающем порядке) и по publish,
+    # чтобы сначала отображать последние посты для постов с одинаковым числом общих тегов.
+    # Результат нарезается, чтобы получить только первые четыре поста
+    similar_posts = similar_posts.annotate(same_tags=Count('tags')).order_by('-same_tags', '-publish')[:4]
+
     return render(request,
                   'blog/post/detail.html',
                   {'post': post,
                    'comments': comments,
-                   'form': form})
+                   'form': form,
+                   'similar_posts': similar_posts})
 
 
 class PostListView(ListView):
