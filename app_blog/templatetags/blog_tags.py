@@ -36,7 +36,14 @@ def show_latest_posts(count=5):
     return {'latest_posts': latest_posts}
 
 
+# В приведенном выше шаблонном теге с помощью
+# функции annotate() формируется набор запросов QuerySet, чтобы агрегировать общее число ком-
+# ментариев к каждому посту. Функция агрегирования Count используется для
+# сохранения количества комментариев в вычисляемом поле total_comments по
+# каждому объекту Post. Набор запросов QuerySet упорядочивается по вычисляемому
+# полю в убывающем порядке. Также предоставляется опциональная
+# переменная count, чтобы ограничивать общее число возвращаемых объектов.
 @register.simple_tag
 def get_most_commented_posts(count=5):
-    return Post.published.annotate(
-        total_comments=Count('comments')).order_by('-total_comments')[:count]
+    return Post.published.annotate(total_comments=Count('comments')
+                                   ).order_by('-total_comments')[:count]
