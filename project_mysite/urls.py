@@ -1,5 +1,7 @@
 from django.contrib import admin
 from django.urls import path, include
+from django.contrib.sitemaps.views import sitemap
+from app_blog.sitemaps import PostSitemap
 
 # Необходимо вставить шаблоны URL-адресов приложения app_blog в главные шаблоны URL-адресов проекта.
 # Новый шаблон URL-адреса, определенный с помощью функции include,
@@ -15,8 +17,20 @@ from django.urls import path, include
 # •• шаблонные теги управляют прорисовкой шаблона и выглядят как {%tag %}
 # •• шаблонные переменные заменяются значениями при прорисовке шаблона и выглядят как {{ variable }}
 # •• шаблонные фильтры позволяют видоизменять отображаемые переменные и выглядят как {{ variable|filter }}
+
+
+
+# В приведенном выше исходном коде были вставлены необходимые инструкции
+# импорта и определен словарь sitemaps. На сайте может быть определено несколько карт.
+# Мы определили шаблон URL-адреса, который совпадает с шаблоном
+# sitemap.xml и в котором используется встроенное в Django
+# представление sitemap. Словарь sitemaps передается в представление sitemap.
+
+sitemaps = {'posts': PostSitemap,}
+
 urlpatterns = [
     path('admin/', admin.site.urls),
     path('blog/', include('app_blog.urls', namespace='blog')),
+    path('sitemap.xml', sitemap, {'sitemaps': sitemaps},name='django.contrib.sitemaps.views.sitemap')
 ]
 
