@@ -22,6 +22,7 @@ post_detail в именном пространстве blog. Мы передае
 -->
 
 {% extends "blog/base.html" %}
+{% load blog_tags %}
 {% block title %}My Blog{% endblock %}
 {% block content %}
 <h1>My Blog</h1>
@@ -58,7 +59,8 @@ post_detail в именном пространстве blog. Мы передае
 <p class="date">
     Published {{ post.publish }} by {{ post.author }}
 </p>
-{{ post.body|truncatewords:30|linebreaks }}
+<!-- post.body|truncatewords:30|linebreaks -->
+{{ post.body|markdown|truncatewords_html:30 }}
 
 {% endfor %}
 
